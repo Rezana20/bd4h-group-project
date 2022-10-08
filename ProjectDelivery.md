@@ -10,20 +10,14 @@ Important dates and tasks
 
 
 1. Select a paper  - add options to list [
-61,  FarSight: Long-Term Disease Prediction Using Unstructured Clinical Nursing Notes - David
-92,  Risk Prediction on Electronic Health Records with Prior Medical Knowledge
-168, Med7: A transferable clinical natural language processing model for electronic health records
-214, Knowledge-Aware Assessment of Severity of Suicide Risk for Early Intervention
+61,  FarSight: Long-Term Disease Prediction Using Unstructured Clinical Nursing Notes 
+168, Med7: A transferable clinical natural language processing model for electronic health records - David
 267, AI-Driven Clinical Decision Support: Enhancing Disease Diagnosis Exploiting Patients Similarity - Rezana 
-276, Using indication embeddings to represent patient health for drug safety studies]
-	a. The paper must have data available, the code must be available for referencing
-	b. The best rating should be 5
-	c. The level could be hard or easy
 
 
 2. Register Team on excel link  - Done
 
-3. Register Paper by submitting a pdf to gradescope with the team details and paper selection, follow instructions on Submit_at_team_level_pdf - To do
+3. Register Paper by submitting a pdf to gradescope with the team details and paper selection, follow instructions on Submit_at_team_level_pdf - Done 
 
 4. Project Proposal 
 	a. Review selection from previous steps and then select 1
@@ -102,9 +96,17 @@ Meeting notes:
 Date: Tue Sept 20
 
 To do:
-1. Select a paper
-2. Find code reference
-3. Review choices all choices and create summarise content to make decision for the project proposal
+1. Select a paper each - done
+2. Find code reference  - done
+3. Review choices all choices and create summarise content to make decision for the project proposal - Done
+4. Provide feedback to eachother about the reviewed - Done
+5. Aim for 28th 29th to be completed
+
+6. Complete the project proposal
+7. Complete the review of all papers (Rezana to do AI-Driven Clinical Decision... and David to rereview his existing submission)
+8. Decide on the paper - present to each other in before week 1 ends and then use week 2 to try and get to the project draft and decide on a technical solution. 
+9. Meet around Oct 7 and 8 
+
 
 
 
