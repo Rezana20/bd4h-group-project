@@ -1,0 +1,71 @@
+Notes on the simililarity
+
+
+
+- This is a distance based similarity matrix between the target patient p and another patient pk in the historic EHR
+
+- how is this calculuated?
+	- take each item from the patients symptom vector p
+	- compare it to pk 
+	- take the value of maximum similarity
+
+- in other words the sematically most similar term is determined
+
+----
+
+patient p = [0.001, 0.009, 0.08]
+n is the max that is n = (0.08)
+
+patient pk = [0.01, 0.09, 0.008]
+m is the max that is m = 0.09
+
+semantic similarity = argmax cos(p, pk) / argmax(n, m)
+
+
+example
+
+Step 1 get the each max cos value between p and pk
+argmax (cos(0.001, 0.01))   =  argmax (cos(0.001), cos(0.01))     = argmax( 0.99, 0.98) = (0.99)
+argmax (cos(0.009, 0.09,))  =  argmax (cos(0.009), cos(0.09))     = argmax( 0.99, 0.96) = (0.99)
+argmax (cos(0.08, 0.008))   =  argmax (cos(0.001), cos(0.008))    = argmax( 0.99, 0.92) = (0.99)
+
+
+Step 2 sum max values
+
+0.99 + 0.99 +0.99
+
+ = 2.97
+
+
+Step 3 divide by argmax(n, m)
+
+2.97 /0.9 = 3.3
+
+similarity (p, pk) = 3.3
+
+
+Range bounds []
+
+Testing trained vector []
+
+
+
+code_diagnosis, symptom1, symptom2, symptom3 * 60000
+
+
+Symptom1 and symptom3 - very similar 
+
+Preprocessing - feature reduction 
+
+
+
+
+Take all the data -> create the similarity groups  - get the cluster centres - prediction statement - cluster centres
+
+
+
+
+
+
+
+
