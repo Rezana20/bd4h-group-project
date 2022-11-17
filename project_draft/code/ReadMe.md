@@ -2,22 +2,44 @@
 
 1. Read training data and create sentence vectors = DONE
    
-   a. Read input to training files
+   a. Read input to training files - DONE
    
-   b. store transformed data - as list of x features and y being hadm_id - using biosentvec
+   b. store transformed data - as list of x features and y being hadm_id - using biosentvec - DONE
 
    
 2. Perform patient similarity calculation
    
-   a. Calculate using the similarity distance vs RNN 
+   a. Calculate using the similarity distance - DONE
    
-   b. Store prediction vs actual value  - for later use in metrics
+   b. Store prediction vs actual value  - for later use in metrics - IN PROGRESS
+      - Convert each test folder to ordered
+      - For each test find best match(across all folds) within alpha for each alpha
+         [0][4][1]   -> k:[1][0], k:[4][1], k:[0.1][2][4][1.1], k:[1][0][3], k:[0.2][2][4][1.2][1.4][1.3]
+         [0][4][1]   -> k:[1][0] within alpha = 0.7
+         [0] -> [1] ~  0.65  no
+         [0] -> [0] ~  0.90  yes
+         [4] -> [1] ~  0.3   no
+         [4] -> [0] ~  0.1   no
+         [1] -> [1] ~  0.9   yes
+         [1] -> [0] ~  0.7   yes
+         ~ Average 0.5 increase the average to 0.7
+         1 value for this entire comparison  1 
+      - store prediction (best match= pred value , test y = actual value) for every file
 
 
-3. Later retrieve the model for testing - CDS
+3. Later retrieve the model for testing - CDS - P2
+   - finding exact match 
+   - decreasing similarity threshold from 100 to 95 to 90 
 
    
-4. Create metrics per paper
+4. Create metrics per paper - TO DO 
+   - Read every prediction fold, calculate TP and FP 
+   - Calculate Recall and Precision 
+   - Calculate Beta P2
+   - Report on our clock time P2
+
+
+
 
 
 ## Project structure
@@ -57,13 +79,6 @@ metrics.py
 
 When making changes to the environment, update the environment.yml and then run ` conda env update`
 
-
-Prior to set up I had to download sent2vec from git, this is now stored in the package and you do not need to repeat this step. 
-I followed the below steps after creating and setting up my local environment
-
-1. `git clone https://github.com/epfml/sent2vec.git`
-2. `cd sent2vec`
-3. `pip install . `
 
 
 
