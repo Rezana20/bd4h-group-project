@@ -1,15 +1,89 @@
-## Project goals
+
+
+## Project structure
+
+>data :
+- contains all the data for training and testing the model. 
+- we will store the folds here
+- you will notice extra data folder paths namely processed, sorted and ordered. These directories allow the storing of processed data throughout the creation of historic patient vectors
+
+> main.py
+- choreography pattern for the CDS framework
+- this class contains the framework steps and is in charge of treating the historic patient data using the data_transformer module
+- this class also uses the cds module which uses the output of data transformation, that is the vectorised symptoms and directs the steps to do patient similarity. 
+- this class also calls the metrics class to perform testing 
+- this class also signals the metrics for analysing accuracy 
+
+>data_transformer.py
+- input data transformed into sentence vectors using the biosentvec model 
+- data goes through 3 levels of treatment, that is converting to vectors, sorting symptoms per diagnosis and then ordering diagnosis
+- at each stage data is persisted into folders with corresponding names 
+
+>cds.py
+- this class uses the results from the data_transformer and converts the data into dictionaries at read
+- this class then implements the patient cosine similarity equation as defined in the paper to efficiently search target patient against historic patient data  persist into data storage 
+- this class also contains the capability to tests the framework  and could take in a list of symptoms from a physician and then provide a diagnosis 
+- the results of the tests are persisted into maps of predicted value -> actual value for later metric analysis
+
+> metrics.py
+- class used to recreate performance metrics 
+- this class uses output from testing for various aplha by reading in the data 
+- this class calculates TPs and FPs for Precision and Recall calcultions
+- this class does our metric graphing
+
+> models:
+- defined as any domain objects that we would want to use in the project 
+
+----
+
+
+##  How to set up the project environment
+
+###Step 1 
+- download the biosentvec model used to train the vectors from https://github.com/ncbi-nlp/BioSentVec
+
+- Make sure you download the BioSentVec model 21GB (700dim, trained on PubMed+MIMIC-III) from https://ftp.ncbi.nlm.nih.gov/pub/lu/Suppl/BioSentVec/BioSentVec_PubMed_MIMICIII-bigram_d700.bin
+
+- Note that this model is 21GB and will require disk space to download and use, you will also need to pre-download as this takes time
+
+###Step 2
+
+- download this folder (https://github.com/Rezana20/bd4h-group-project/tree/main/project_draft/code)
+
+###Step 3
+
+- after retrieving source code place downloaded biosenvec  model into the folder named: biosentvec_model
+
+###Step4
+- run `conda env create -f environment.yml`
+
+###Step5 
+- now activate the enviroment: run `conda activate project`
+
+###Step 6
+- to re-produce project run `python main.py`
+
+---------
+
+
+
+
+## Team Project delivery tracker
 
 1. Read training data and create sentence vectors = DONE
    
-   a. Read input to training files - DONE
+   a. Read input + convert to csv to training files - DONE
    
-   b. store transformed data - as list of x features and y being hadm_id - using biosentvec - DONE
+   b. store transformed data - as list of x features and y being hadm_id - using BioSentVec - DONE
+
+   c. sort and order data - DONE
+   
+   d. store transformed data at each stage - DONE 
 
    
 2. Perform patient similarity calculation
    
-   a. Calculate using the similarity distance - DONE
+   a. Calculate using the similarity distance explained in the paper- DONE
    
    b. Store prediction vs actual value  - for later use in metrics - IN PROGRESS
       - Convert each test folder to ordered
@@ -28,59 +102,37 @@
 
 
 3. Later retrieve the model for testing - CDS - P2
-   - finding exact match 
-   - decreasing similarity threshold from 100 to 95 to 90 
+   
+    a. finding exact match 
+   
+    b. decreasing similarity threshold from 100 to 95 to 90 
 
    
-4. Create metrics per paper - TO DO 
-   - Read every prediction fold, calculate TP and FP 
-   - Calculate Recall and Precision 
-   - Calculate Beta P2
-   - Report on our clock time P2
+4. Create metrics per paper - IN PROGRESS
+    
+    a. Read every prediction fold, calculate TP and FP 
+   
+    b. Calculate Recall and Precision 
+   
+    c. Calculate Beta P2 
+   
+    d. Consider report on our clock time P2
+    
 
+5. Build a scalable framework:
+    
+    a. Allow adding of folds of data with minimal change - DONE
 
+    b. Allow sorting/ordering without reprocessing all historic data - DONE
 
-
-
-## Project structure
-
-
-data:
-- contains all the data for training and testing the model. 
-- we will store the folds here
-
-models:
-- all the classes used in the project 
-
-data_transformer.py
-- input data transformed into sentence vectors usong biosentvec as well as persisted.
-
-main.py
-- choreography pattern for the CDS framework
-
-cds.py
-- this class will test be used to take in a list of symptoms from a physician and then provide a diagnosis 
-
-metrics.py
-- class used to recreate paper metrics 
-
-
-##  How to set up the project environment
-
-- after downloading the project run `conda env create -f environment.yml
-`
-- now activate the enviroment: run `conda activate project`
-
-- navigate to the sent2vec folder and run `pip install .`
+    c. Allow new prediction on CDS without any new training - DONE
 
 //ultimate goal
 - run the cds.py to use the framework to make a prediction
 
+//note
 
 When making changes to the environment, update the environment.yml and then run ` conda env update`
-
-
-
 
 
 
