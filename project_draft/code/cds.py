@@ -74,11 +74,28 @@ class cds:
 
         return disease
 
+    # def cosine_similarity(self, target_element, existing_patient_element):
+    #     list_argmax_cos = []
+    #     print(existing_patient_element)
+    #
+    #     for x in range(len(target_element)-1):
+    #         temp = [np.cos(target_element[x]), np.cos(existing_patient_element[x])]
+    #         temp_argmax = np.argmax(temp, axis=0)
+    #         list_argmax_cos.append(temp[temp_argmax])
+    #
+    #     sum_argmax = sum(list_argmax_cos)
+    #
+    #     result = sum_argmax / 700
+    #
+    #     print(result)
+    #
+    #     return result
+
     def cosine_similarity(self, target_element, existing_patient_element):
         list_argmax_cos = []
 
-        for x in range(len(target_element)-1):
-            temp = [np.cos(target_element[x]), np.cos(existing_patient_element[x])]
+        for x in range(len(target_element[0]) - 1):
+            temp = [np.cos(target_element[0][x]), np.cos(existing_patient_element[0][x])]
             temp_argmax = np.argmax(temp, axis=0)
             list_argmax_cos.append(temp[temp_argmax])
 
@@ -90,34 +107,94 @@ class cds:
 
         return result
 
-    def search_fold(self, fold_name, test_symptoms):
+    def semantic_similarity(self, target_element, existing_patient_element):
+        temp = 0
+        m = len(target_element)
+        n = len(existing_patient_element)
+        for x in existing_patient_element:
+            temp += max([(np.array(x) @ np.array(y)) / (np.linalg.norm(x) * np.linalg.norm(y)) if np.linalg.norm(
+                x) * np.linalg.norm(y) != 0 else 0 for y in target_element])
+        return temp / max(n, m)
+
+    def similarity_search_n_folds(self, test_fold_dict, alpha, k, fold_dict, fold_index):
+        top_k = []
+
+        similarity_comparison_dictionary = {}
+
+        for target_patient_key in test_fold_dict:
+            for fold_key in fold_index.keys():
+                print("Comparing test target patient: ", target_patient_key, " to each diagnosis in fold ->: ",
+                      fold_index[fold_key])
+
+                row_similarity_list = []
+                for target_patient_symptom_vector in range(len(test_fold_dict[target_patient_key])):
+                    target_patient_similarity_list = []
+                    for fold_patient_symptom_vector in range(len((fold_dict[fold_index[fold_key]]))):
+                        target_patient = test_fold_dict[target_patient_key][target_patient_symptom_vector]
+                        historic_patient = fold_dict[fold_index[fold_key]][fold_patient_symptom_vector]
+
+                        similarity = self.semantic_similarity(target_patient, historic_patient)
+                        target_patient_similarity_list.append(similarity)
+
+                    row_similarity_list.append(np.mean(target_patient_similarity_list))
+
+                average_row_similarity = np.mean(row_similarity_list)
+
+                similarity_comparison_dictionary[
+                    target_patient_key + "," + fold_index[fold_key]] = average_row_similarity
+
+                print(similarity_comparison_dictionary)
+
+                # for fold_patient_symptom_vector in range(len(fold_dict[fold_index[fold_key]])):
+                #     print(test_fold_dict[target_patient_key][target_patient_symptom_vector])
+
+        return top_k
+
+    def search_fold(self, fold_name):
 
         # Todo read test symptoms and search fold
-        # print(test_symptoms)
 
-        ordered_dict = self.fetch_sorted_data(fold_name)
+        # fetches the ordered fold name
+        print("compare fold to dummy test ->", fold_name)
+        ordered_fold_dict = self.fetch_sorted_data(fold_name)
 
         # [0] = whole [[[][]]]
         # [0][0] = []
         # [0][0][0] is the first element of the first
 
-        # create an index for searching
-        index = {k: i for k, i in enumerate(ordered_dict.keys())}
+        print("set alpha 0.7")
+        alpha_list = [0.7, 0.8, 0.9]
+        print("set k to 5")
+        k_list = [1, 5, 10, 15, 20, 25, 30]
 
-        elem = self.fetch_elem()
+        # Todo read in the test folder
+        print("read the test fold")
+        test_dict = self.fetch_elem()
 
-        print(self.cosine_similarity(elem["103379_E coli septicemia"][1][0], elem["103379_E coli septicemia"][1][0]))
+        print("create an index for searching the fold")
+        ordered_fold_index = {k: i for k, i in enumerate(ordered_fold_dict.keys())}
 
-        list_yes_keys = []
-        for keys in index.keys():
-            ordered_dict[index[keys]][0]
+        print("----------------")
+        for alpha in alpha_list:
+            for k in k_list:
+                print("alpha: ", alpha)
+                print("k: ", k)
 
-            does_exist = self.find_in_sorted_list(elem["103379_E coli septicemia"][1][0], ordered_dict[index[keys]][0])
+                result = self.similarity_search_n_folds(test_dict, alpha, k, ordered_fold_dict, ordered_fold_index)
+                print("result: ", result)
 
-            if does_exist != -1:
-                list_yes_keys.append(keys)
-
-        print(list_yes_keys)
+        # print(self.cosine_similarity(elem["103379_E coli septicemia"][1][0], elem["103379_E coli septicemia"][1][0]))
+        #
+        # list_yes_keys = []
+        # for keys in index.keys():
+        #     ordered_dict[index[keys]][0]
+        #
+        #     does_exist = self.find_in_sorted_list(elem["103379_E coli septicemia"][1][0], ordered_dict[index[keys]][0])
+        #
+        #     if does_exist != -1:
+        #         list_yes_keys.append(keys)
+        #
+        # print(list_yes_keys)
 
     def fetch_elem(self):
         folder_path = "./data/ordered/Fold0/processed_TrainingSetFold0-test.csv"
