@@ -140,13 +140,9 @@ class cds:
 
                 average_row_similarity = np.mean(row_similarity_list)
 
-                similarity_comparison_dictionary[
-                    target_patient_key + "," + fold_index[fold_key]] = average_row_similarity
+                similarity_comparison_dictionary[target_patient_key + "," + fold_index[fold_key]] = average_row_similarity
 
-                print(similarity_comparison_dictionary)
-
-                # for fold_patient_symptom_vector in range(len(fold_dict[fold_index[fold_key]])):
-                #     print(test_fold_dict[target_patient_key][target_patient_symptom_vector])
+            print(similarity_comparison_dictionary)
 
         return top_k
 
@@ -163,9 +159,9 @@ class cds:
         # [0][0][0] is the first element of the first
 
         print("set alpha 0.7")
-        alpha_list = [0.7, 0.8, 0.9]
+        alpha_list = [0.7] # [0.7, 0.8, 0.9]
         print("set k to 5")
-        k_list = [1, 5, 10, 15, 20, 25, 30]
+        k_list = [5] # [1, 5, 10, 15, 20, 25, 30]
 
         # Todo read in the test folder
         print("read the test fold")
