@@ -1,4 +1,5 @@
 import csv
+import itertools
 import sys
 import bisect
 from fileinput import close
@@ -102,9 +103,6 @@ class cds:
         sum_argmax = sum(list_argmax_cos)
 
         result = sum_argmax / 700
-
-        print(result)
-
         return result
 
     def semantic_similarity(self, target_element, existing_patient_element):
@@ -123,8 +121,8 @@ class cds:
 
         for target_patient_key in test_fold_dict:
             for fold_key in fold_index.keys():
-                print("Comparing test target patient: ", target_patient_key, " to each diagnosis in fold ->: ",
-                      fold_index[fold_key])
+                # print("Comparing test target patient: ", target_patient_key, " to each diagnosis in fold ->: ",
+                #       fold_index[fold_key])
 
                 row_similarity_list = []
                 for target_patient_symptom_vector in range(len(test_fold_dict[target_patient_key])):
@@ -135,16 +133,26 @@ class cds:
 
                         similarity = self.semantic_similarity(target_patient, historic_patient)
                         target_patient_similarity_list.append(similarity)
+                        # similarity = self.cosine_similarity(target_patient, historic_patient)
+                        if similarity > alpha:
+                            target_patient_similarity_list.append(similarity)
 
                     row_similarity_list.append(np.mean(target_patient_similarity_list))
 
                 average_row_similarity = np.mean(row_similarity_list)
 
-                similarity_comparison_dictionary[target_patient_key + "," + fold_index[fold_key]] = average_row_similarity
+                similarity_comparison_dictionary[
+                    target_patient_key + "," + fold_index[fold_key]] = average_row_similarity
 
-            print(similarity_comparison_dictionary)
+            #     Todo store the dictionary results in folder under Fold name
 
-        return top_k
+        # Order similarity_comparison_dictionary by value, and then select top k and return that.
+        similarity_comparison_dictionary = {combination_key: similarity_value for combination_key, similarity_value in
+                                            sorted(similarity_comparison_dictionary.items(), key=lambda item: item[1], reverse=True)[:k]}
+
+        # print(similarity_comparison_dictionary)
+
+        return similarity_comparison_dictionary
 
     def search_fold(self, fold_name):
 
@@ -159,9 +167,10 @@ class cds:
         # [0][0][0] is the first element of the first
 
         print("set alpha 0.7")
-        alpha_list = [0.7] # [0.7, 0.8, 0.9]
+        alpha_list = [0.7]  # [0.7, 0.8, 0.9]
         print("set k to 5")
-        k_list = [5] # [1, 5, 10, 15, 20, 25, 30]
+        max_k = 30
+        k_list = [1, 5, 10, 15, 20, 25, 30]
 
         # Todo read in the test folder
         print("read the test fold")
@@ -172,12 +181,14 @@ class cds:
 
         print("----------------")
         for alpha in alpha_list:
+            print("alpha: ", alpha)
+            result = self.similarity_search_n_folds(test_dict, alpha, max_k, ordered_fold_dict, ordered_fold_index)
             for k in k_list:
-                print("alpha: ", alpha)
                 print("k: ", k)
 
-                result = self.similarity_search_n_folds(test_dict, alpha, k, ordered_fold_dict, ordered_fold_index)
-                print("result: ", result)
+                print("result: ", max((dict(itertools.islice(result.items(), k)).values())))
+
+
 
         # print(self.cosine_similarity(elem["103379_E coli septicemia"][1][0], elem["103379_E coli septicemia"][1][0]))
         #
@@ -193,7 +204,7 @@ class cds:
         # print(list_yes_keys)
 
     def fetch_elem(self):
-        folder_path = "./data/ordered/Fold0/processed_TrainingSetFold0-test.csv"
+        folder_path = "./data/ordered/Fold0/processed_TrainingSetFold0-test-105150.csv"
         with open(folder_path) as csv_file:
             reader = csv.reader(csv_file)
             diagnosis_symptoms_dict = dict(reader)
