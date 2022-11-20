@@ -84,7 +84,7 @@
 2. Perform patient similarity calculation
    
    a. Calculate using the similarity distance explained in the paper- DONE
-   
+
    b. Store prediction vs actual value  - for later use in metrics - IN PROGRESS
       - Convert each test folder to ordered
       - For each test find best match(across all folds) within alpha for each alpha
@@ -111,12 +111,54 @@
 4. Create metrics per paper - IN PROGRESS
     
     a. Read every prediction fold, calculate TP and FP 
+    - Read test data and convert to BioSentVec Model - IN PROGRESS 
+      
+    b.Compare test to fold through the method explained in the paper - DONE
+    - for each fold of data  - Example
+        Test data
+      
+        `test1 [1,2,3,4,5] [11, 4,6,] [1,3,5] `
+
+        First fold
+      
+       `diag1 :[1,2,3,4,5] [11, 4,6,] [1,3,5], `
+        
+       `diag2 :[1,2,5] [11, 10, 4,6,] [1,3,5,8,9]`
+       
+      First compare test to diag 1 using similarity.  We will compare 
+      
+        `test[0] = [1,2,3,4,5]  to diag1 [0] = [1,2,3,4,5]`
+      
+        `test[0] = [1,2,3,4,5]  to diag1 [1] = [11, 4,6,]`
+      
+        `test[0] = [1,2,3,4,5]  to diag1 [2] = [1,3,5] `
+      
+        Second we wil take average of test [0] 
+        Third we then we compare test [1] to diag1 [0], diag1 [1], diag1 [2]
+
+        We will get 1 value for test1 -> diag1, test1 -> diag2
+
+        We will compare this value to threshold - if this value is below the threshold - call this the minimum  then do the same for diag 2
+        
+        If this is bigger than minimum but less than threshold continue
+    
+        We store the value in a dictionary as such
+
+        Actual -> Predicted : Similarity
+        
+        test 1 -> diag 1 : Value
+        
+        test 1 -> diag 2 : Value 
+      
+        test 1 -> diag 3 : Value
+
+        sort diction and take top k  []
+      
+    c.Calculate Recall and Precision 
    
-    b. Calculate Recall and Precision 
+    d. Calculate Beta P2 
    
-    c. Calculate Beta P2 
-   
-    d. Consider report on our clock time P2
+    e. Consider report on our clock time P2
     
 
 5. Build a scalable framework:
