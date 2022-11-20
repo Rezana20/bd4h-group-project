@@ -64,17 +64,6 @@ class cds:
 
             close()
 
-    def disease_diagnosis(self, symptom_list):
-        disease = "diabetes"
-
-        # Todo import trained model
-        model = "read trained model"
-
-        # Todo read symptom_list pass it to trained model - determine the output and return the cds guess
-        # disease = model.predict(symptom_list)
-
-        return disease
-
     # def cosine_similarity(self, target_element, existing_patient_element):
     #     list_argmax_cos = []
     #     print(existing_patient_element)
@@ -117,10 +106,9 @@ class cds:
     def similarity_search_n_folds(self, test_fold_dict, alpha, k, fold_dict, fold_index):
         top_k = []
 
-        similarity_comparison_dictionary = {}
-
         for target_patient_key in test_fold_dict:
-            for fold_key in fold_index.keys():
+            similarity_comparison_dictionary = {}
+            for fold_key in range(k):
                 # print("Comparing test target patient: ", target_patient_key, " to each diagnosis in fold ->: ",
                 #       fold_index[fold_key])
 
@@ -134,8 +122,9 @@ class cds:
                         similarity = self.semantic_similarity(target_patient, historic_patient)
                         target_patient_similarity_list.append(similarity)
                         # similarity = self.cosine_similarity(target_patient, historic_patient)
-                        if similarity > alpha:
-                            target_patient_similarity_list.append(similarity)
+
+                        # if similarity > alpha:
+                        #     target_patient_similarity_list.append(similarity)
 
                     row_similarity_list.append(np.mean(target_patient_similarity_list))
 
@@ -144,15 +133,17 @@ class cds:
                 similarity_comparison_dictionary[
                     target_patient_key + "," + fold_index[fold_key]] = average_row_similarity
 
-            #     Todo store the dictionary results in folder under Fold name
+            self.predictions(similarity_comparison_dictionary)
+
+        #     Todo store the dictionary results in folder under Fold name
 
         # Order similarity_comparison_dictionary by value, and then select top k and return that.
-        similarity_comparison_dictionary = {combination_key: similarity_value for combination_key, similarity_value in
-                                            sorted(similarity_comparison_dictionary.items(), key=lambda item: item[1], reverse=True)[:k]}
+        # similarity_comparison_dictionary = {combination_key: similarity_value for combination_key, similarity_value in
+        #                                     sorted(similarity_comparison_dictionary.items(), key=lambda item: item[1], reverse=True)[:k]}
 
         # print(similarity_comparison_dictionary)
 
-        return similarity_comparison_dictionary
+        # return similarity_comparison_dictionary
 
     def search_fold(self, fold_name):
 
@@ -170,7 +161,7 @@ class cds:
         alpha_list = [0.7]  # [0.7, 0.8, 0.9]
         print("set k to 5")
         max_k = 30
-        k_list = [1, 5, 10, 15, 20, 25, 30]
+
 
         # Todo read in the test folder
         print("read the test fold")
@@ -182,18 +173,54 @@ class cds:
         print("----------------")
         for alpha in alpha_list:
             print("alpha: ", alpha)
-            result = self.similarity_search_n_folds(test_dict, alpha, max_k, ordered_fold_dict, ordered_fold_index)
-            for k in k_list:
-                print("k: ", k)
-
-                print("result: ", dict(itertools.islice(result.items(), k)))
-
+            self.similarity_search_n_folds(test_dict, alpha, max_k, ordered_fold_dict, ordered_fold_index)
 
     def fetch_elem(self):
-        folder_path = "./data/ordered/Fold0/processed_TrainingSetFold0-test-105150.csv"
+        folder_path = "./data/ordered/Fold0/processed_TrainingSetFold0-test copy.csv"
         with open(folder_path) as csv_file:
             reader = csv.reader(csv_file)
             diagnosis_symptoms_dict = dict(reader)
             sorted_symptoms_dict = self.read_file_to_sorted_dictionary(diagnosis_symptoms_dict)
             close()
             return sorted_symptoms_dict
+
+    def predictions(self, top_k_dictionary):
+        folder_path = "./data/ordered/Fold0"
+        precision = 0
+
+        # P = (TP) / ( TP + TN)
+        k_list = [1, 5, 10, 15, 20, 25, 30]
+        ground_truth = ''
+        precision_list_for_k = []
+        for k in k_list:
+            # print("result: ", dict(itertools.islice(top_k_dictionary.items(), k)))
+
+            temp_k_dict = dict(itertools.islice(top_k_dictionary.items(), k))
+
+            TP_count = 0
+            precision_dict = {}
+
+            for combination_key in temp_k_dict.keys():
+
+                prediction_result = combination_key.split(",")
+                ground_truth = prediction_result[0]
+                prediction = prediction_result[1]
+
+                if ground_truth == prediction:
+                    TP_count += 1
+
+            if TP_count != 0:
+                P = TP_count / k
+            else:
+                P = 0
+
+            precision_list_for_k.append(P)
+
+            precision_dict[ground_truth] = precision_list_for_k
+
+        with open(folder_path + "/precisionFold0.csv", "a") as csv_file:
+            writer = csv.writer(csv_file)
+            for key, value in precision_dict.items():
+                writer.writerow([key, value])
+
+        pass
