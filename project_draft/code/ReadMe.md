@@ -53,8 +53,13 @@
 ###Step 3
 
 - after retrieving source code place downloaded biosenvec  model into the folder named: biosentvec_model
+- Setup Sent2Vec locally
+    -  `git clone https://github.com/epfml/sent2vec.git`
+    -  `cd sent2vec`
+    -  `pip install .`
 
 ###Step4
+- Go back to code folder
 - run `conda env create -f environment.yml`
 
 ###Step5 

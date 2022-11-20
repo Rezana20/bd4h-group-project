@@ -8,7 +8,7 @@ def make_diagnosis():
 
     diagnosis = cds.cds()
 
-    diagnosis.search_fold("Fold0", [-0.10787458717823029, 0.2507815659046173, 0.43371447920799255])
+    diagnosis.search_fold("Fold0", [[-0.10787458717823029, 0.2507815659046173, 0.43371447920799255]])
 
 
 def data_ordering(data_trans):
@@ -93,39 +93,37 @@ def data_sorting(data_trans):
 
 def data_preprocessing(data_trans):
     print("Module 1, data pre-processing")
-    # data_trans = data_transformer.data_transformer()
-    #
+    
     # print("Fold0 pre-processing.....")
     # data_trans.read_fold("Fold0")
-    # Gout NOS, Old myocardial infarct
 
     # print("Fold0 pre-processing.....")
     # data_trans.read_fold("Fold0")
 
     # print("Fold1 pre-processing.....")
     # data_trans.read_fold("Fold1")
-    #
+    
     # print("Fold2 pre-processing.....")
     # data_trans.read_fold("Fold2")
-    #
+    
     # print("Fold3 pre-processing.....")
     # data_trans.read_fold("Fold3")
-    #
+    
     # print("Fold4 pre-processing.....")
     # data_trans.read_fold("Fold4")
-    #
+    
     # print("Fold5 pre-processing.....")
     # data_trans.read_fold("Fold5")
-    #
+    
     # print("Fold6 pre-processing.....")
     # data_trans.read_fold("Fold6")
-    #
+    
     # print("Fold7 pre-processing.....")
     # data_trans.read_fold("Fold7")
-    #
+    
     # print("Fold8 pre-processing.....")
     # data_trans.read_fold("Fold8")
-    #
+    
     # print("Fold9 pre-processing.....")
     # data_trans.read_fold("Fold9")
 
@@ -133,13 +131,13 @@ def data_preprocessing(data_trans):
 if __name__ == '__main__':
     data_trans = data_transformer.data_transformer()
 
-    data_preprocessing(data_trans)
+    # data_preprocessing(data_trans)
 
-    data_sorting(data_trans)
+    # data_sorting(data_trans)
 
-    data_ordering(data_trans)
+    # data_ordering(data_trans)
 
-    make_diagnosis()
+    # make_diagnosis()
 
     # diagnosis()
     # creating list https://www.freecodecamp.org/news/the-python-sort-list-array-method-ascending-and-descending-explained-with-examples/
