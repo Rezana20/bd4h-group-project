@@ -24,8 +24,12 @@ class metrics:
 
         average_precision_list = [df[0].mean(), df[1].mean(), df[2].mean(), df[3].mean(), df[4].mean(), df[5].mean(), df[6].mean()]
 
-        plt.plot(average_precision_list)
-        plt.show()
+        plt.figure(figsize=(9, 6))
+        plt.plot([1,5,10,15,20,25,30],average_precision_list)
+        plt.title("Average precision over alphas")
+        plt.xlabel("Top K")
+        plt.ylabel("Precison")
+        plt.savefig("average_precision.png")
 
         # compute average
 
