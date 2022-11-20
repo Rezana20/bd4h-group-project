@@ -116,3 +116,58 @@ class data_transformer:
                 sorted_values = sorted(sorted_symptoms_dict.values())  # Sort the values
 
                 self.save_processed_data(fold_name, sorted_symptoms_dict, "sorted")
+    
+    def fetch_sorted_data(self, fold_name):
+        if fold_name:
+            folder_path = "./data/sorted/" + fold_name + "/processed_TrainingSet" + fold_name + ".csv"
+
+            with open(folder_path) as csv_file:
+                reader = csv.reader(csv_file)
+                diagnosis_symptoms_dict = dict(reader)
+                sorted_symptoms_dict = self.read_file_to_sorted_dictionary(diagnosis_symptoms_dict)
+
+                return sorted_symptoms_dict
+
+            close()
+    
+    def read_file_to_sorted_dictionary(self, diagnosis_symptoms_dict):
+        sorted_symptoms_dict = {}
+        for entries in diagnosis_symptoms_dict.keys():
+
+            full_string_values = diagnosis_symptoms_dict.get(entries).lstrip('[[[').rstrip(']]]')
+            full_string_values = full_string_values.split("]], [[")
+            sorted_values = []
+            # This is the list of vectors per diag
+            for symptom_vector_list in full_string_values:
+                # This is the list of vectors broken into each vector
+                symptom_vectors = symptom_vector_list.split("], [")
+                total_symptom_vector_list = []
+                # This is us converting each element in the vector to its float value and
+                # adding it back to the a vector list
+
+                for vector in symptom_vectors:
+                    vector = vector.split(",")
+                    single_symptom_vector_list = []
+                    for string_vector in vector:
+                        result = float(string_vector)
+                        single_symptom_vector_list.append(result)
+                    total_symptom_vector_list.append(single_symptom_vector_list)
+
+                sorted_values.append(total_symptom_vector_list)
+
+            sorted_values = sorted(sorted_values)
+            sorted_symptoms_dict[entries] = sorted_values
+        return sorted_symptoms_dict
+
+    def rearrange(self, unorderd_dict, fold_name):
+        order_dict = {}
+        for key in unorderd_dict.keys():
+            order_dict[key] = unorderd_dict[key][0]
+
+        order_dict = {k: v for k, v in sorted(order_dict.items(), key=lambda item: item[1])}
+
+        order_dict_to_save = {}
+        for key in order_dict.keys():
+            order_dict_to_save[key] = unorderd_dict[key]
+
+        self.save_processed_data(fold_name, order_dict_to_save, "ordered")
