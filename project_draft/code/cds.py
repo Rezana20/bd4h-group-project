@@ -186,22 +186,8 @@ class cds:
             for k in k_list:
                 print("k: ", k)
 
-                print("result: ", max((dict(itertools.islice(result.items(), k)).values())))
+                print("result: ", dict(itertools.islice(result.items(), k)))
 
-
-
-        # print(self.cosine_similarity(elem["103379_E coli septicemia"][1][0], elem["103379_E coli septicemia"][1][0]))
-        #
-        # list_yes_keys = []
-        # for keys in index.keys():
-        #     ordered_dict[index[keys]][0]
-        #
-        #     does_exist = self.find_in_sorted_list(elem["103379_E coli septicemia"][1][0], ordered_dict[index[keys]][0])
-        #
-        #     if does_exist != -1:
-        #         list_yes_keys.append(keys)
-        #
-        # print(list_yes_keys)
 
     def fetch_elem(self):
         folder_path = "./data/ordered/Fold0/processed_TrainingSetFold0-test-105150.csv"
