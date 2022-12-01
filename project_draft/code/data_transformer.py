@@ -6,29 +6,28 @@ from string import punctuation
 import nltk
 import csv
 import numpy as np
+
 nltk.download('stopwords')
 nltk.download('punkt')
 import sys
 
 
-
-
-
 class data_transformer:
 
     def __init__(self):
-        # self.model_path = "./biosentvec_model/BioSentVec_PubMed_MIMICIII-bigram_d700.bin"
-        # self.model = sent2vec.Sent2vecModel()
-        # try:
-        #     self.model.load_model(self.model_path)
-        # except Exception as e:
-        #     print(e)
-        # print('model successfully loaded')
+        self.model_path = "./biosentvec_model/BioSentVec_PubMed_MIMICIII-bigram_d700.bin"
+        self.model = sent2vec.Sent2vecModel()
+        try:
+            self.model.load_model(self.model_path)
+        except Exception as e:
+            print(e)
+        print('model successfully loaded')
 
         csv.field_size_limit(sys.maxsize)
         print("init")  # never prints
 
-    def preprocess_sentence(self, text):
+    @staticmethod
+    def preprocess_sentence(text):
         stop_words = set(stopwords.words('english'))
         text = text.replace('.', ' . ')
         text = text.replace('\'', ' \' ')
@@ -43,11 +42,13 @@ class data_transformer:
 
         return sentence_vector
 
-    def save_processed_data(self, fold_name, vector_dict, parent_folder):
+    @staticmethod
+    def save_processed_data(fold_name, vector_dict, parent_folder, filename):
 
         # https://stackoverflow.com/questions/8685809/writing-a-dictionary-to-a-csv-file-with-one-line-for-every-key-value
 
-        with open("./data/"+parent_folder+"/" + fold_name + "/processed_TrainingSet" + fold_name + ".csv", "w") as csv_file:
+        with open("./data/" + parent_folder + "/" + fold_name + "/processed_" + filename + fold_name + ".csv",
+                  "w") as csv_file:
             writer = csv.writer(csv_file)
             for key, value in vector_dict.items():
                 writer.writerow([key, value])
@@ -69,17 +70,17 @@ class data_transformer:
             vector_dict[row[0]] = row_list
         return vector_dict
 
-    def read_fold(self, fold_name):
+    def process_fold_data(self, fold_name, filename):
 
         if fold_name:
-            folder_path = "./data/unprocessed/" + fold_name + "/TrainingSet.csv"
+            folder_path = "./data/unprocessed/" + fold_name + "/" + filename + ".csv"
 
             fold_dataframe = pd.read_csv(folder_path, header=None, sep='\n')
             fold_dataframe = fold_dataframe[0].str.split(',', expand=True)
 
             vector_dict = self.create_vector_dictionary(fold_dataframe)
 
-            self.save_processed_data(fold_name, vector_dict, "processed")
+            self.save_processed_data(fold_name, vector_dict, "processed", filename)
 
             # Most efficient way to loop through a dataframe is df.to_dict('records')
             # https://towardsdatascience.com/heres-the-most-efficient-way-to-iterate-through-your-pandas-dataframe-4dad88ac92ee#:~:text=Vectorization%20is%20always%20the%20first,up%20for%2020%20million%20records.
@@ -87,9 +88,9 @@ class data_transformer:
             exit
 
     def fetch_processed_data_fold(self, fold_name):
-
+        filename = "TrainingSet"
         if fold_name:
-            folder_path = "./data/processed/" + fold_name + "/processed_TrainingSet"+fold_name+".csv"
+            folder_path = "./data/processed/" + fold_name + "/processed_" + filename + fold_name + ".csv"
             with open(folder_path) as csv_file:
                 reader = csv.reader(csv_file)
                 diagnosis_symptoms_dict = dict(reader)
@@ -115,8 +116,8 @@ class data_transformer:
                 # {k: v for k, v in sorted(sorted_symptoms_dict.items(), key=lambda item: print(item))}
                 sorted_values = sorted(sorted_symptoms_dict.values())  # Sort the values
 
-                self.save_processed_data(fold_name, sorted_symptoms_dict, "sorted")
-    
+                self.save_processed_data(fold_name, sorted_symptoms_dict, "sorted", filename)
+
     def fetch_sorted_data(self, fold_name):
         if fold_name:
             folder_path = "./data/sorted/" + fold_name + "/processed_TrainingSet" + fold_name + ".csv"
@@ -129,8 +130,9 @@ class data_transformer:
                 return sorted_symptoms_dict
 
             close()
-    
-    def read_file_to_sorted_dictionary(self, diagnosis_symptoms_dict):
+
+    @staticmethod
+    def read_file_to_sorted_dictionary(diagnosis_symptoms_dict):
         sorted_symptoms_dict = {}
         for entries in diagnosis_symptoms_dict.keys():
 
@@ -159,15 +161,16 @@ class data_transformer:
             sorted_symptoms_dict[entries] = sorted_values
         return sorted_symptoms_dict
 
-    def rearrange(self, unorderd_dict, fold_name):
+    def rearrange(self, unordered_dict, fold_name):
+        filename = "TrainingSet"
         order_dict = {}
-        for key in unorderd_dict.keys():
-            order_dict[key] = unorderd_dict[key][0]
+        for key in unordered_dict.keys():
+            order_dict[key] = unordered_dict[key][0]
 
         order_dict = {k: v for k, v in sorted(order_dict.items(), key=lambda item: item[1])}
 
         order_dict_to_save = {}
         for key in order_dict.keys():
-            order_dict_to_save[key] = unorderd_dict[key]
+            order_dict_to_save[key] = unordered_dict[key]
 
-        self.save_processed_data(fold_name, order_dict_to_save, "ordered")
+        self.save_processed_data(fold_name, order_dict_to_save, "ordered", filename)

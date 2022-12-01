@@ -1,6 +1,5 @@
 # ignore data
-./data
+data/*
 
 # ignore biosentvec
-./biosentvec_model
-
+biosentvec_model
