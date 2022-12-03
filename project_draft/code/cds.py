@@ -3,6 +3,9 @@ import itertools
 import sys
 import bisect
 from fileinput import close
+import time
+import os.path
+import re
 
 import numpy as np
 
@@ -13,7 +16,8 @@ class cds:
         csv.field_size_limit(sys.maxsize)
         print("init")  # never prints
 
-    def read_file_to_sorted_dictionary(self, diagnosis_symptoms_dict):
+    @staticmethod
+    def read_file_to_sorted_dictionary(diagnosis_symptoms_dict):
         sorted_symptoms_dict = {}
         for entries in diagnosis_symptoms_dict.keys():
 
@@ -42,20 +46,9 @@ class cds:
             sorted_symptoms_dict[entries] = sorted_values
         return sorted_symptoms_dict
 
-    # exact search
-    def find_in_sorted_list(self, elem, sorted_list):
-        # https://docs.python.org/3/library/bisect.html
-        'Locate the leftmost value exactly equal to x'
-        i = bisect.bisect_left(sorted_list, elem)
-        if i != len(sorted_list) and sorted_list[i] == elem:
-            return "exists"
-        return -1
-
-    def fetch_sorted_data(self, fold_name):
-        if fold_name:
-            folder_path = "./data/ordered/" + fold_name + "/processed_TrainingSet" + fold_name + ".csv"
-
-            with open(folder_path) as csv_file:
+    def fetch_input_data(self, filename):
+        if filename:
+            with open(filename) as csv_file:
                 reader = csv.reader(csv_file)
                 diagnosis_symptoms_dict = dict(reader)
                 sorted_symptoms_dict = self.read_file_to_sorted_dictionary(diagnosis_symptoms_dict)
@@ -64,127 +57,56 @@ class cds:
 
             close()
 
-    # def cosine_similarity(self, target_element, existing_patient_element):
-    #     list_argmax_cos = []
-    #     print(existing_patient_element)
-    #
-    #     for x in range(len(target_element)-1):
-    #         temp = [np.cos(target_element[x]), np.cos(existing_patient_element[x])]
-    #         temp_argmax = np.argmax(temp, axis=0)
-    #         list_argmax_cos.append(temp[temp_argmax])
-    #
-    #     sum_argmax = sum(list_argmax_cos)
-    #
-    #     result = sum_argmax / 700
-    #
-    #     print(result)
-    #
-    #     return result
+    @staticmethod
+    def read_similarity_data(patient_similarity_dict):
+        similarity_dict = {}
+        for entry in patient_similarity_dict.keys():
+            cleaned_patient_similarity_value = patient_similarity_dict[entry].lstrip('[(').rstrip(')]')
+            patient_similarity_str = cleaned_patient_similarity_value.split("), (")
+            top_k = {}
+            for key_value_pair in patient_similarity_str:
+                key_value_pair_split = key_value_pair.split(",")
+                top_k[key_value_pair_split[0]] = float(key_value_pair_split[1])
+            similarity_dict[entry] = top_k
 
-    def cosine_similarity(self, target_element, existing_patient_element):
-        list_argmax_cos = []
+        return similarity_dict
 
-        for x in range(len(target_element[0]) - 1):
-            temp = [np.cos(target_element[0][x]), np.cos(existing_patient_element[0][x])]
-            temp_argmax = np.argmax(temp, axis=0)
-            list_argmax_cos.append(temp[temp_argmax])
+    def fetch_similarity_data(self, filename):
+        if filename:
+            with open(filename) as csv_file:
+                reader = csv.reader(csv_file)
+                patient_similarity_dict = dict(reader)
+                similarity_dict = self.read_similarity_data(patient_similarity_dict)
+                return similarity_dict
 
-        sum_argmax = sum(list_argmax_cos)
-
-        result = sum_argmax / 700
-        return result
-
-    def semantic_similarity(self, target_element, existing_patient_element):
-        temp = 0
-        m = len(target_element)
-        n = len(existing_patient_element)
-        for x in existing_patient_element:
-            temp += max([(np.array(x) @ np.array(y)) / (np.linalg.norm(x) * np.linalg.norm(y)) if np.linalg.norm(
-                x) * np.linalg.norm(y) != 0 else 0 for y in target_element])
-        return temp / max(n, m)
-
-    def similarity_search_n_folds(self, test_fold_dict, alpha, k, fold_dict, fold_index):
-        top_k = []
-
-        for target_patient_key in test_fold_dict:
-            similarity_comparison_dictionary = {}
-            for fold_key in range(k):
-                # print("Comparing test target patient: ", target_patient_key, " to each diagnosis in fold ->: ",
-                #       fold_index[fold_key])
-
-                row_similarity_list = []
-                for target_patient_symptom_vector in range(len(test_fold_dict[target_patient_key])):
-                    target_patient_similarity_list = []
-                    for fold_patient_symptom_vector in range(len((fold_dict[fold_index[fold_key]]))):
-                        target_patient = test_fold_dict[target_patient_key][target_patient_symptom_vector]
-                        historic_patient = fold_dict[fold_index[fold_key]][fold_patient_symptom_vector]
-
-                        similarity = self.semantic_similarity(target_patient, historic_patient)
-                        target_patient_similarity_list.append(similarity)
-                        # similarity = self.cosine_similarity(target_patient, historic_patient)
-
-                        # if similarity > alpha:
-                        #     target_patient_similarity_list.append(similarity)
-
-                    row_similarity_list.append(np.mean(target_patient_similarity_list))
-
-                average_row_similarity = np.mean(row_similarity_list)
-
-                similarity_comparison_dictionary[
-                    target_patient_key + "," + fold_index[fold_key]] = average_row_similarity
-
-            self.predictions(similarity_comparison_dictionary)
-
-        #     Todo store the dictionary results in folder under Fold name
-
-        # Order similarity_comparison_dictionary by value, and then select top k and return that.
-        # similarity_comparison_dictionary = {combination_key: similarity_value for combination_key, similarity_value in
-        #                                     sorted(similarity_comparison_dictionary.items(), key=lambda item: item[1], reverse=True)[:k]}
-
-        # print(similarity_comparison_dictionary)
-
-        # return similarity_comparison_dictionary
-
-    def search_fold(self, fold_name):
-
-        # Todo read test symptoms and search fold
-
-        # fetches the ordered fold name
-        print("compare fold to dummy test ->", fold_name)
-        ordered_fold_dict = self.fetch_sorted_data(fold_name)
-
-        # [0] = whole [[[][]]]
-        # [0][0] = []
-        # [0][0][0] is the first element of the first
-
-        print("set alpha 0.7")
-        alpha_list = [0.7]  # [0.7, 0.8, 0.9]
-        print("set k to 5")
-        max_k = 30
-
-
-        # Todo read in the test folder
-        print("read the test fold")
-        test_dict = self.fetch_elem()
-
-        print("create an index for searching the fold")
-        ordered_fold_index = {k: i for k, i in enumerate(ordered_fold_dict.keys())}
-
-        print("----------------")
-        for alpha in alpha_list:
-            print("alpha: ", alpha)
-            self.similarity_search_n_folds(test_dict, alpha, max_k, ordered_fold_dict, ordered_fold_index)
-
-    def fetch_elem(self):
-        folder_path = "./data/ordered/Fold0/processed_TrainingSetFold0-test copy.csv"
-        with open(folder_path) as csv_file:
-            reader = csv.reader(csv_file)
-            diagnosis_symptoms_dict = dict(reader)
-            sorted_symptoms_dict = self.read_file_to_sorted_dictionary(diagnosis_symptoms_dict)
             close()
-            return sorted_symptoms_dict
 
-    def predictions(self, top_k_dictionary):
+    # exact match search
+    @staticmethod
+    def find_in_sorted_list(elem, sorted_list):
+        # https://docs.python.org/3/library/bisect.html
+        'Locate the leftmost value exactly equal to x'
+        i = bisect.bisect_left(sorted_list, elem)
+        if i != len(sorted_list) and sorted_list[i] == elem:
+            return "exists"
+        return -1
+
+    def calculate_top_k(self, foldname):
+        print("We are attempting to calculate top k (30)")
+        st = time.time()
+
+        print("Fold 0....")
+        self.create_and_store_top_30(foldname)
+
+        # get the end time
+        et = time.time()
+
+        # get the execution time
+        elapsed_time = et - st
+        print('Execution time:', elapsed_time, 'seconds')
+
+    @staticmethod
+    def predictions(top_k_dictionary):
         folder_path = "./data/ordered/Fold0"
         precision = 0
 
@@ -224,3 +146,161 @@ class cds:
                 writer.writerow([key, value])
 
         pass
+
+    @staticmethod
+    def cosine_similarity(patient_vector_list, target_patient_vector_list):
+        n = len(patient_vector_list)
+        m = len(target_patient_vector_list)
+
+        total_sum = 0
+        for x in range(n):
+            max_cos = 0
+            for y in range(m):
+
+                patient_vector = patient_vector_list[x]
+                target_patient_vector = target_patient_vector_list[y]
+                cos_x = 0
+                cos_y = 0
+                for element in range(700):
+                    cos_x += np.cos(patient_vector[0][element]) / 700
+                    cos_y += np.cos(target_patient_vector[0][element]) / 700
+
+                x_vs_y_cos = [cos_x, cos_y]
+                max_cos = x_vs_y_cos[np.argmax(x_vs_y_cos, axis=0)]
+            total_sum += max_cos
+
+        n_m_max = [n, m]
+
+        return total_sum / n_m_max[np.argmax(n_m_max, axis=0)]
+
+    def store_TP_TN(self, foldname, alpha):
+        filename = "./data/processed/" + foldname + "/TopK_TestSet" + foldname + "_" + str(alpha) + ".csv"
+        file_exists = self.do_something(filename)
+        if file_exists:
+            test_fold_alpha = self.fetch_similarity_data(filename)
+            cumulative_TP = [0, 0, 0, 0, 0, 0, 0]
+            cumulative_TN = [0, 0, 0, 0, 0, 0, 0]
+            TP_dict = {}
+            TP_TN_dict = {}
+
+            for patient in test_fold_alpha.keys():
+                # https://thispointer.com/remove-string-before-a-specific-character-in-python/
+                ch = '_'
+                pattern = ".*" + ch
+                patient_diag = re.sub(pattern, '', patient)
+
+                value_dict = test_fold_alpha[patient]
+                value_index = {k: i for k, i in enumerate(value_dict.keys())}
+
+                for k, v in value_index.items():
+                    if re.sub(pattern, '', v.rstrip("'")) == patient_diag:
+                        if patient not in TP_dict:
+                            TP_dict[patient] = k
+
+            for patient in test_fold_alpha.keys():
+                if patient in TP_dict:
+                    position = TP_dict[patient]
+                    if position == 0:
+                        for i in range(len(cumulative_TN)):
+                            cumulative_TP[i] += 1
+                    elif 1 <= position <= 4:
+                        for i in range(1, 7):
+                            cumulative_TP[i] += 1
+                    elif 5 <= position <= 9:
+                        for i in range(2, 7):
+                            cumulative_TP[i] += 1
+                    elif 10 <= position <= 14:
+                        for i in range(3, 7):
+                            cumulative_TP[i] += 1
+                    elif 15 <= position <= 19:
+                        for i in range(4, 7):
+                            cumulative_TP[i] += 1
+                    elif 20 <= position <= 24:
+                        for i in range(5, 7):
+                            cumulative_TP[i] += 1
+                    elif 25 <= position <= 29:
+                        for i in range(6, 7):
+                            cumulative_TP[i] += 1
+                else:
+                    for i in range(len(cumulative_TN)):
+                        cumulative_TN[i] += 1
+
+            TP_TN_dict["TP"] = cumulative_TP
+            TP_TN_dict["TN"] = cumulative_TN
+            self.save_TP_TN_per_fold(TP_TN_dict, foldname, alpha)
+
+    def similarity_search(self, test_data_dict, alpha, train_data_dictionary, train_fold_index, foldname):
+
+        filename = "./data/processed/" + foldname + "/TopK_TestSet" + foldname + "_" + str(alpha) + ".csv"
+        file_exists = self.do_something(filename)
+        if not file_exists:
+            test_fold_patient_dict = {}
+            for patient in test_data_dict:
+                # print("patient ", patient)
+                similarity_dict = {}
+                patient_vector_list = test_data_dict[patient]
+
+                for target_patient in train_fold_index:
+                    target_patient_vector_list = train_data_dictionary[train_fold_index[target_patient]]
+                    max_precision = self.cosine_similarity(patient_vector_list, target_patient_vector_list)
+                    if max_precision >= alpha:
+                        similarity_dict[train_fold_index[target_patient]] = max_precision
+
+                similarity_dict = sorted(similarity_dict.items(), key=lambda x: x[1], reverse=True)
+                if len(similarity_dict) > 30:
+                    test_fold_patient_dict[patient] = similarity_dict[:30]
+                else:
+                    test_fold_patient_dict[patient] = similarity_dict
+                # break
+
+            # print(test_fold_patient_dict)
+
+            return test_fold_patient_dict
+        else:
+            pass
+
+    def save_topk_data(self, foldname, vector_dict, alpha):
+        # https://stackoverflow.com/questions/8685809/writing-a-dictionary-to-a-csv-file-with-one-line-for-every-key-value
+        filename = "./data/processed/" + foldname + "/TopK_TestSet" + foldname + "_" + str(alpha) + ".csv"
+
+        file_exists = self.do_something(filename)
+
+        if not file_exists:
+            with open(filename, "w") as csv_file:
+                writer = csv.writer(csv_file)
+                for key, value in vector_dict.items():
+                    writer.writerow([key, value])
+        close()
+
+    def save_TP_TN_per_fold(self, TP_TN_dict, foldname, alpha):
+        filename = "./data/processed/" + foldname + "/TP_TN" + foldname + "_" + str(alpha) + ".csv"
+
+        file_exists = self.do_something(filename)
+
+        if not file_exists:
+            with open(filename, "w") as csv_file:
+                writer = csv.writer(csv_file)
+                for key, value in TP_TN_dict.items():
+                    writer.writerow([key, value])
+        close()
+
+    def do_something(self, filename):
+        return os.path.exists(filename)
+
+    def create_and_store_top_30(self, foldname):
+
+        test_file_name = "./data/processed/" + foldname + "/processed_TestSet" + foldname + ".csv"
+        train_file_name = "./data/processed/" + foldname + "/processed_TrainingSet" + foldname + ".csv"
+        test_data_dict = self.fetch_input_data(test_file_name)
+        train_data_dict = self.fetch_input_data(train_file_name)
+        train_fold_index = {k: i for k, i in enumerate(train_data_dict.keys())}
+        test_fold_index = {k: i for k, i in enumerate(test_data_dict.keys())}
+        alpha = [0.70, 0.80, 0.90]
+
+        for alp in alpha:
+            test_fold_patient_dict = self.similarity_search(test_data_dict, alp, train_data_dict, train_fold_index,
+                                                            foldname)
+            self.save_topk_data(foldname, test_fold_patient_dict, alp)
+
+        for alp in alpha:
+            self.store_TP_TN(foldname, alp)
