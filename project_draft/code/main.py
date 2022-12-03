@@ -7,7 +7,8 @@ import metrics
 def get_metrics():
     print("Module 5 print metrics")
     graphs = metrics.metrics()
-    graphs.sketch()
+    graphs.sketch_precision()
+    graphs.sketch_recall()
 
 
 def make_diagnosis():
@@ -15,7 +16,19 @@ def make_diagnosis():
 
     diagnosis = cds.cds()
 
-    diagnosis.search_fold("Fold0")
+    # diagnosis.calculate_top_k("Fold0")
+    # diagnosis.calculate_top_k("Fold1")
+    # diagnosis.calculate_top_k("Fold2")
+    # diagnosis.calculate_top_k("Fold3")
+    # diagnosis.calculate_top_k("Fold4")
+    # diagnosis.calculate_top_k("Fold5")
+    # diagnosis.calculate_top_k("Fold6")
+    # diagnosis.calculate_top_k("Fold7")
+    # diagnosis.calculate_top_k("Fold8")
+    # diagnosis.calculate_top_k("Fold9")
+
+
+
 
 
 def data_ordering(data_trans):
@@ -170,16 +183,16 @@ def data_preprocessing(data_trans):
 if __name__ == '__main__':
     data_trans = data_transformer.data_transformer()
 
-    # data_preprocessing(data_trans)
+    data_preprocessing(data_trans)
 
-    # test_data_preprocessing(data_trans)
+    test_data_preprocessing(data_trans)
 
-    # data_sorting(data_trans)
+    data_sorting(data_trans)
 
-    # data_ordering(data_trans)
+    data_ordering(data_trans)
 
-    # make_diagnosis()
+    make_diagnosis()
 
-    # get_metrics()
+    get_metrics()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
