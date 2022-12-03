@@ -28,7 +28,7 @@
 > metrics.py
 - class used to recreate performance metrics 
 - this class uses output from testing for various aplha by reading in the data 
-- this class calculates TPs and FPs for Precision and Recall calcultions
+- this class calculates Precision and Recall calculations
 - this class does our metric graphing
 
 > models:
@@ -86,7 +86,7 @@
    d. store transformed data at each stage - DONE 
 
    
-2. Perform patient similarity calculation
+2. Perform patient similarity calculation  - DONE
    
    a. Calculate using the similarity distance explained in the paper- DONE
 
@@ -106,14 +106,14 @@
       - store prediction (best match= pred value , test y = actual value) for every file
 
 
-3. Later retrieve the model for testing - CDS - P2
+3. Later retrieve the model for testing - CDS - P2 - DONE
    
-    a. finding exact match 
+    a. finding exact match  - DONE
    
-    b. decreasing similarity threshold from 100 to 95 to 90 
+    b. decreasing similarity threshold alphas [90, 80, 70] - DONE
 
    
-4. Create metrics per paper - IN PROGRESS
+4. Create metrics per paper - DONE 
     
     a. Read every prediction fold, calculate TP and FP 
     - Read test data and convert to BioSentVec Model - IN PROGRESS 
@@ -159,14 +159,14 @@
 
         sort diction and take top k  []
       
-    c.Calculate Recall and Precision 
+    c. Calculate Recall and Precision - DONE
    
-    d. Calculate Beta P2 
+    d. Calculate Beta P2  -TO DO 
    
-    e. Consider report on our clock time P2
+    e. Consider report on our clock time P2 - DONE
     
 
-5. Build a scalable framework:
+5. Build a scalable framework: DONE
     
     a. Allow adding of folds of data with minimal change - DONE
 
@@ -175,7 +175,7 @@
     c. Allow new prediction on CDS without any new training - DONE
 
 //ultimate goal
-- run the cds.py to use the framework to make a prediction
+- run the main.py to view performance of the framework
 
 //note
 
